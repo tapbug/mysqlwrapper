@@ -1,0 +1,20 @@
+Source: libmysqlwrapper
+Priority: extra
+Maintainer: Eduard Veleba <veleba@novalighting.cz>
+Build-Depends: debhelper (>= 7), autotools-dev, libmysqlclient-dev
+Standards-Version: 3.7.3
+Section: libs
+
+Package: libmysqlwrapper-dev
+Section: libdevel
+Architecture: any
+Depends: libmysqlwrapper1 (= ${binary:Version})
+Description: MySQL C++ Wrapper
+ MySQL C++ Wrapper
+
+Package: libmysqlwrapper1
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: MySQL C++ Wrapper
+ MySQL C++ Wrapper
