@@ -2,11 +2,11 @@ libmysqlwrapper (0.0.2) unstable; urgency=low
 
   * Added support for smart pointers of sql wrapper
 
- -- Eduard Veleba <eduard.veleba@ideacomplete.cz>  Sat, 18 Sep 2010 17:06:26 +0200
+ -- Eduard Veleba <veleba@novalighting.cz>  Sat, 18 Sep 2010 17:06:26 +0200
 
 libmysqlwrapper (0.0.1) unstable; urgency=low
 
   * Initial release
 
- -- Eduard Veleba <eduard.veleba@ideacomplete.cz>  Tue, 16 Feb 2010 21:51:53 +0000
+ -- Eduard Veleba <veleba@novalighting.cz>  Tue, 16 Feb 2010 21:51:53 +0000
 
