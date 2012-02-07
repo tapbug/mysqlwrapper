@@ -26,43 +26,110 @@ int Row_t::size()
 
 std::string Row_t::fetchNext()
 {
+    boost::optional<std::string> result(fetchNextOpt());
+    if (result) {
+        return *result;
+    } else {
+        return std::string();
+    }
+}
+
+boost::optional<std::string> Row_t::fetchNextOpt()
+{
+    boost::optional<std::string> result;
     if (index >= rowSize) {
         throw MySQLWrapperError_t("No more values in row: size=%ld index=%ld",
                                   rowSize, index);
     }
-    std::string value(row[index], lengths[index]);
+    if (row[index]) {
+        result.reset(std::string(row[index], lengths[index]));
+    }
     ++index;
-    return value;
+    return result;
 }
 
 Row_t& Row_t::operator>>(std::string &s)
 {
-    s = fetchNext();
+    boost::optional<std::string> result(fetchNextOpt());
+    if (result) {
+        s = *result;
+    }
     return *this;
 }
 
 Row_t& Row_t::operator>>(int &i)
 {
-    i = lexical_cast<std::string, int>(fetchNext());
+    boost::optional<std::string> result(fetchNextOpt());
+    if (result) {
+        i = lexical_cast<std::string, int>(*result);
+    }
     return *this;
 }
 
 Row_t& Row_t::operator>> (double &d)
 {
-    d = lexical_cast<std::string, double>(fetchNext());
+    boost::optional<std::string> result(fetchNextOpt());
+    if (result) {
+        d = lexical_cast<std::string, double>(*result);
+    }
     return *this;
 }
 
 Row_t& Row_t::operator>>(bool &b)
 {
-    std::string val = fetchNext();
-    if (val == "1") {
-        b = true;
-    } else if (val == "0") {
-        b = false;
-    } else {
-        throw MySQLWrapperError_t("Invalid literal `%s' for boolean",
-                                  val.c_str());
+    boost::optional<std::string> result(fetchNextOpt());
+    if (result) {
+        if (*result == "1") {
+            b = true;
+        } else if (*result == "0") {
+            b = false;
+        } else {
+            throw MySQLWrapperError_t("Invalid literal `%s' for boolean",
+                result->c_str());
+        }
+    }
+    return *this;
+}
+
+Row_t& Row_t::operator>>(boost::optional<std::string> &s)
+{
+    boost::optional<std::string> result(fetchNextOpt());
+    if (result) {
+        s.reset(*result);
+    }
+    return *this;
+}
+
+Row_t& Row_t::operator>>(boost::optional<int> &i)
+{
+    boost::optional<std::string> result(fetchNextOpt());
+    if (result) {
+        i.reset(lexical_cast<std::string, int>(*result));
+    }
+    return *this;
+}
+
+Row_t& Row_t::operator>> (boost::optional<double> &d)
+{
+    boost::optional<std::string> result(fetchNextOpt());
+    if (result) {
+        d.reset(lexical_cast<std::string, double>(*result));
+    }
+    return *this;
+}
+
+Row_t& Row_t::operator>>(boost::optional<bool> &b)
+{
+    boost::optional<std::string> result(fetchNextOpt());
+    if (result) {
+        if (*result == "1") {
+            b.reset(true);
+        } else if (*result == "0") {
+            b.reset(false);
+        } else {
+            throw MySQLWrapperError_t("Invalid literal `%s' for boolean",
+                result->c_str());
+        }
     }
     return *this;
 }

@@ -1,3 +1,9 @@
+libmysqlwrapper (0.0.3) unstable; urgency=low
+
+  * Fixed NULL handling
+
+ -- Eduard Veleba <veleba@novalighting.cz>  Tue, 07 Feb 2012 13:44:03 +0100
+
 libmysqlwrapper (0.0.2) unstable; urgency=low
 
   * Added support for smart pointers of sql wrapper

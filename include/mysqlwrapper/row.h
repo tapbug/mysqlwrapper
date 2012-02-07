@@ -5,6 +5,7 @@
 #include <mysql/mysql.h>
 #include <string>
 #include <sstream>
+#include <boost/optional.hpp>
 
 namespace MySQLWrapper {
 
@@ -37,12 +38,35 @@ public:
     template<typename TO>
     Row_t& operator>> (TO &x)
     {
-        x = lexical_cast<std::string, TO>(fetchNext());
+        boost::optional<std::string> result(fetchNextOpt());
+        if (result) {
+            x = lexical_cast<std::string, TO>(*result);
+        }
+        return *this;
+    }
+
+    Row_t& operator>>(boost::optional<std::string> &s);
+
+    Row_t& operator>>(boost::optional<int> &i);
+
+    Row_t& operator>>(boost::optional<double> &d);
+
+    Row_t& operator>>(boost::optional<bool> &b);
+
+    template<typename TO>
+    Row_t& operator>> (boost::optional<TO> &x)
+    {
+        boost::optional<std::string> result(fetchNextOpt());
+        if (result) {
+            x.reset(lexical_cast<std::string, TO>(*result));
+        }
         return *this;
     }
 
 private:
     std::string fetchNext();
+
+    boost::optional<std::string> fetchNextOpt();
 
     unsigned long long index;
     unsigned long long rowSize;
