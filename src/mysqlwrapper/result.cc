@@ -13,6 +13,12 @@ Result_t::Result_t(MySQLWrapper_t *sql)
         throw MySQLWrapperError_t("Not in transaction");
     }
     result = mysql_store_result(&sql->transaction->mysql);
+    if (!result) {
+        int err(mysql_errno(&sql->transaction->mysql));
+        throw MySQLWrapperError_t(err,
+                                  "Can't fetch result: %s",
+                                  mysql_error(&sql->transaction->mysql));
+    }
 }
 
 Result_t::~Result_t()
