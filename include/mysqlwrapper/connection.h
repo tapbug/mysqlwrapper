@@ -8,6 +8,7 @@
 namespace MySQLWrapper {
 
 class Result_t;
+class MySQLWrapper_t;
 
 class Connection_t {
 friend class Result_t;
@@ -28,7 +29,8 @@ public:
 
     void connect();
 
-    void query(const std::string &sentence);
+    void query(MySQLWrapper_t *sql,
+               const std::string &sentence);
 
     long long lastInsertId();
 

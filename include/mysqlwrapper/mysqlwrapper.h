@@ -11,6 +11,7 @@ class Connection_t;
 
 class MySQLWrapper_t {
 friend class Result_t;
+friend class Connection_t;
 public:
     MySQLWrapper_t(const std::string &masterHost,
                    const std::string &masterSocket,

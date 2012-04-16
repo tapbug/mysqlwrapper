@@ -1,3 +1,9 @@
+libmysqlwrapper (0.0.5) unstable; urgency=low
+
+  * Fixed server disconnect handling (must reset transaction)
+
+ -- Eduard Veleba <eduard.veleba@firma.seznam.cz>  Mon, 16 Apr 2012 11:29:22 +0200
+
 libmysqlwrapper (0.0.4) unstable; urgency=low
 
   * Fixed handling errors on fetching result

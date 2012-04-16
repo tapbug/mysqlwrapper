@@ -2,6 +2,7 @@
 #include <mysql/mysql.h>
 #include <string>
 
+#include <mysqlwrapper/connection.h>
 #include <mysqlwrapper/result.h>
 
 namespace MySQLWrapper {
@@ -15,6 +16,12 @@ Result_t::Result_t(MySQLWrapper_t *sql)
     result = mysql_store_result(&sql->transaction->mysql);
     if (!result) {
         int err(mysql_errno(&sql->transaction->mysql));
+        if (err == 2006) {
+            Connection_t *connection(sql->transaction);
+            sql->transaction = 0;
+            connection->connect();
+            throw MySQLWrapperError_t(2006, "Lost connection to MySQL server.");
+        }
         throw MySQLWrapperError_t(err,
                                   "Can't fetch result: %s",
                                   mysql_error(&sql->transaction->mysql));

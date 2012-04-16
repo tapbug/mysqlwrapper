@@ -65,8 +65,16 @@ void MySQLWrapper_t::beginRW()
     if (transaction) {
         throw MySQLWrapperError_t("Already in transaction");
     }
-    transaction = connections.first;
-    transaction->query("BEGIN WORK");
+    try {
+        transaction = connections.first;
+        transaction->query(this, "BEGIN WORK");
+    } catch (const MySQLWrapperError_t &e) {
+        if (e.code() != 2006) {
+            throw;
+        }
+        transaction = connections.first;
+        transaction->query(this, "BEGIN WORK");
+    }
 }
 
 void MySQLWrapper_t::beginRO()
@@ -74,12 +82,24 @@ void MySQLWrapper_t::beginRO()
     if (transaction) {
         throw MySQLWrapperError_t("Already in transaction");
     }
-    if (connections.second) {
-        transaction = connections.second;
-    } else {
-        transaction = connections.first;
+    try {
+        if (connections.second) {
+            transaction = connections.second;
+        } else {
+            transaction = connections.first;
+        }
+        transaction->query(this, "BEGIN WORK");
+    } catch (const MySQLWrapperError_t &e) {
+        if (e.code() != 2006) {
+            throw;
+        }
+        if (connections.second) {
+            transaction = connections.second;
+        } else {
+            transaction = connections.first;
+        }
+        transaction->query(this, "BEGIN WORK");
     }
-    transaction->query("BEGIN WORK");
 }
 
 void MySQLWrapper_t::rollback()
@@ -87,8 +107,14 @@ void MySQLWrapper_t::rollback()
     if (!transaction) {
         throw MySQLWrapperError_t("Not in transaction");
     }
-    transaction->query("ROLLBACK");
-    transaction = NULL;
+    try {
+        transaction->query(this, "ROLLBACK");
+    } catch (const MySQLWrapperError_t &e) {
+        if (e.code() != 2006) {
+            throw;
+        }
+    }
+    transaction = 0;
 }
 
 void MySQLWrapper_t::commit()
@@ -96,8 +122,8 @@ void MySQLWrapper_t::commit()
     if (!transaction) {
         throw MySQLWrapperError_t("Not in transaction");
     }
-    transaction->query("COMMIT");
-    transaction = NULL;
+    transaction->query(this, "COMMIT");
+    transaction = 0;
 }
 
 bool MySQLWrapper_t::isTransaction()
@@ -110,7 +136,7 @@ void MySQLWrapper_t::query(const std::string &sentence)
     if (!transaction) {
         throw MySQLWrapperError_t("Not in transaction");
     }
-    transaction->query(sentence);
+    transaction->query(this, sentence);
 }
 
 

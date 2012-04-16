@@ -3,6 +3,7 @@
 #include <string>
 #include <stdlib.h>
 
+#include <mysqlwrapper/mysqlwrapper.h>
 #include <mysqlwrapper/connection.h>
 #include <mysqlwrapper/error.h>
 
@@ -81,27 +82,16 @@ void Connection_t::connect()
     }
 }
 
-void Connection_t::query(const std::string &sentence)
+void Connection_t::query(MySQLWrapper_t *sql,
+                         const std::string &sentence)
 {
     int result = mysql_real_query(&mysql, sentence.data(), sentence.size());
     if (result) {
         if (mysql_errno(&mysql) == 2006) {
             // connection lost error
+            sql->transaction = 0;
             connect();
-            result = mysql_real_query(&mysql, sentence.data(), sentence.size());
-            if (result) {
-                int err(mysql_errno(&mysql));
-                if (err == 2006) {
-                    // connection lost error
-                    throw MySQLWrapperError_t(2006,
-                                              "Connection to MySQL is still dying");
-                } else {
-                    throw MySQLWrapperError_t(err,
-                                              "Can't execute query: %s, query was: %s",
-                                              mysql_error(&mysql),
-                                              sentence.c_str());
-                }
-            }
+            throw MySQLWrapperError_t(2006, "Lost connection to MySQL server.");
         } else {
             throw MySQLWrapperError_t(mysql_errno(&mysql),
                                       "Can't execute query: %s, query was: %s",
