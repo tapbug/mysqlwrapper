@@ -3,7 +3,9 @@
 #define MYSQLWRAPPER_CONNECTION_H
 
 #include <mysql/mysql.h>
+#include <stdint.h>
 #include <string>
+#include <vector>
 
 namespace MySQLWrapper {
 
@@ -25,6 +27,20 @@ public:
                  const std::string &pass,
                  const std::string &name);
 
+    Connection_t(const std::string &host,
+                 const std::string &socket,
+                 const std::string &user,
+                 const std::string &pass,
+                 const std::string &name,
+                 const std::vector<std::string> &connectQueries);
+
+    Connection_t(const std::string &host,
+                 const int port,
+                 const std::string &user,
+                 const std::string &pass,
+                 const std::string &name,
+                 const std::vector<std::string> &connectQueries);
+
     ~Connection_t();
 
     void connect();
@@ -32,9 +48,9 @@ public:
     void query(MySQLWrapper_t *sql,
                const std::string &sentence);
 
-    long long lastInsertId();
+    uint64_t lastInsertId();
 
-    long long lastMatchingRows();
+    size_t lastMatchingRows();
 
     std::string escape(const std::string &input);
 
@@ -46,6 +62,7 @@ private:
     const std::string user;
     const std::string pass;
     const std::string name;
+    const std::vector<std::string> connectQueries;
     MYSQL mysql;
 };
 

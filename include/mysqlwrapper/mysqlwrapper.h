@@ -26,6 +26,20 @@ public:
                    const std::string &slavePass = "",
                    const std::string &slaveName = "");
 
+    MySQLWrapper_t(const std::string &masterHost,
+                   const std::string &masterSocket,
+                   const int masterPort,
+                   const std::string &masterUser,
+                   const std::string &masterPass,
+                   const std::string &masterName,
+                   const std::vector<std::string> &connectQueries,
+                   const std::string &slaveHost = "",
+                   const std::string &slaveSocket = "",
+                   const int slavePort = 0,
+                   const std::string &slaveUser = "",
+                   const std::string &slavePass = "",
+                   const std::string &slaveName = "");
+
     ~MySQLWrapper_t();
 
     void beginRO();
@@ -40,9 +54,9 @@ public:
 
     void query(const std::string &sentence);
 
-    int lastInsertId();
+    uint64_t lastInsertId();
 
-    int lastMatchingRows();
+    size_t lastMatchingRows();
 
     std::string escape(const std::string &input);
 

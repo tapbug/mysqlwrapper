@@ -11,6 +11,8 @@ libmysqlwrapper_la_SOURCES = \
     row.cc \
     util.cc
 
+libmysqlwrapper_la_LDFLAGS = -version-info 1:0:0
+
 library_includedir = $(includedir)/mysqlwrapper
 
 library_include_HEADERS = \
@@ -20,3 +22,4 @@ library_include_HEADERS = \
     ../../include/mysqlwrapper/result.h \
     ../../include/mysqlwrapper/row.h \
     ../../include/mysqlwrapper/util.h
+

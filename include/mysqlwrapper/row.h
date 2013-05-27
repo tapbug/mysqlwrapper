@@ -5,19 +5,10 @@
 #include <mysql/mysql.h>
 #include <string>
 #include <sstream>
+#include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 
 namespace MySQLWrapper {
-
-template<typename FROM, typename TO>
-TO lexical_cast(const FROM &input)
-{
-    std::stringstream converter;
-    TO output;
-    converter << input;
-    converter >> output;
-    return output;
-}
 
 class Row_t {
 public:
@@ -40,7 +31,7 @@ public:
     {
         boost::optional<std::string> result(fetchNextOpt());
         if (result) {
-            x = lexical_cast<std::string, TO>(*result);
+            x = boost::lexical_cast<TO>(*result);
         }
         return *this;
     }
@@ -58,7 +49,7 @@ public:
     {
         boost::optional<std::string> result(fetchNextOpt());
         if (result) {
-            x.reset(lexical_cast<std::string, TO>(*result));
+            x.reset(boost::lexical_cast<TO>(*result));
         }
         return *this;
     }

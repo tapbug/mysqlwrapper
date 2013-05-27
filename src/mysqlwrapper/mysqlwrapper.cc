@@ -52,6 +52,55 @@ MySQLWrapper_t::MySQLWrapper_t(const std::string &masterHost,
     transaction = NULL;
 }
 
+MySQLWrapper_t::MySQLWrapper_t(const std::string &masterHost,
+                               const std::string &masterSocket,
+                               const int masterPort,
+                               const std::string &masterUser,
+                               const std::string &masterPass,
+                               const std::string &masterName,
+                               const std::vector<std::string> &connectQueries,
+                               const std::string &slaveHost,
+                               const std::string &slaveSocket,
+                               const int slavePort,
+                               const std::string &slaveUser,
+                               const std::string &slavePass,
+                               const std::string &slaveName)
+{
+    if (masterHost == "localhost") {
+        connections.first = new Connection_t(masterHost,
+                                             masterSocket,
+                                             masterUser,
+                                             masterPass,
+                                             masterName,
+                                             connectQueries);
+    } else {
+        connections.first = new Connection_t(masterHost,
+                                             masterPort,
+                                             masterUser,
+                                             masterPass,
+                                             masterName,
+                                             connectQueries);
+    }
+    if (!slaveHost.empty()) {
+       if (slaveHost == "localhost") {
+            connections.second = new Connection_t(slaveHost,
+                                                  slaveSocket,
+                                                  slaveUser,
+                                                  slavePass,
+                                                  slaveName,
+                                                  connectQueries);
+        } else {
+            connections.second = new Connection_t(slaveHost,
+                                                  slavePort,
+                                                  slaveUser,
+                                                  slavePass,
+                                                  slaveName,
+                                                  connectQueries);
+        }
+    }
+    transaction = NULL;
+}
+
 MySQLWrapper_t::~MySQLWrapper_t()
 {
     if (connections.second) {
@@ -65,15 +114,17 @@ void MySQLWrapper_t::beginRW()
     if (transaction) {
         throw MySQLWrapperError_t("Already in transaction");
     }
-    try {
-        transaction = connections.first;
-        transaction->query(this, "BEGIN WORK");
-    } catch (const MySQLWrapperError_t &e) {
-        if (e.code() != 2006) {
-            throw;
+    for (size_t i(1) ; ; --i) {
+        try {
+            transaction = connections.first;
+            transaction->query(this, "BEGIN WORK");
+            return;
+        } catch (const MySQLWrapperError_t &e) {
+            if ((e.code() != 2006 && e.code() != 2013) || !i) {
+                transaction = 0;
+                throw;
+            }
         }
-        transaction = connections.first;
-        transaction->query(this, "BEGIN WORK");
     }
 }
 
@@ -82,23 +133,21 @@ void MySQLWrapper_t::beginRO()
     if (transaction) {
         throw MySQLWrapperError_t("Already in transaction");
     }
-    try {
-        if (connections.second) {
-            transaction = connections.second;
-        } else {
-            transaction = connections.first;
+    for (size_t i(1) ; ; --i) {
+        try {
+            if (connections.second) {
+                transaction = connections.second;
+            } else {
+                transaction = connections.first;
+            }
+            transaction->query(this, "BEGIN WORK");
+            return;
+        } catch (const MySQLWrapperError_t &e) {
+            if ((e.code() != 2006 && e.code() != 2013) || !i) {
+                transaction = 0;
+                throw;
+            }
         }
-        transaction->query(this, "BEGIN WORK");
-    } catch (const MySQLWrapperError_t &e) {
-        if (e.code() != 2006) {
-            throw;
-        }
-        if (connections.second) {
-            transaction = connections.second;
-        } else {
-            transaction = connections.first;
-        }
-        transaction->query(this, "BEGIN WORK");
     }
 }
 
@@ -140,7 +189,7 @@ void MySQLWrapper_t::query(const std::string &sentence)
 }
 
 
-int MySQLWrapper_t::lastInsertId()
+uint64_t MySQLWrapper_t::lastInsertId()
 {
     if (!transaction) {
         throw MySQLWrapperError_t("Not in transaction");
@@ -148,7 +197,7 @@ int MySQLWrapper_t::lastInsertId()
     return transaction->lastInsertId();
 }
 
-int MySQLWrapper_t::lastMatchingRows() {
+size_t MySQLWrapper_t::lastMatchingRows() {
     if (!transaction) {
         throw MySQLWrapperError_t("Not in transaction");
     }

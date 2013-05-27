@@ -41,6 +41,42 @@ Connection_t::Connection_t(const std::string &host,
     connect();
 }
 
+Connection_t::Connection_t(const std::string &host,
+                           const std::string &socket,
+                           const std::string &user,
+                           const std::string &pass,
+                           const std::string &name,
+                           const std::vector<std::string> &connectQueries)
+  : host(host),
+    usingSocket(true),
+    socket(socket),
+    port(0),
+    user(user),
+    pass(pass),
+    name(name),
+    connectQueries(connectQueries)
+{
+    connect();
+}
+
+Connection_t::Connection_t(const std::string &host,
+                           const int port,
+                           const std::string &user,
+                           const std::string &pass,
+                           const std::string &name,
+                           const std::vector<std::string> &connectQueries)
+  : host(host),
+    usingSocket(false),
+    socket(),
+    port(port),
+    user(user),
+    pass(pass),
+    name(name),
+    connectQueries(connectQueries)
+{
+    connect();
+}
+
 Connection_t::~Connection_t()
 {
     mysql_close(&mysql);
@@ -80,6 +116,17 @@ void Connection_t::connect()
                                   "Cannot set encoding: %s",
                                   mysql_error(&mysql));
     }
+    for (std::vector<std::string>::const_iterator iconnectQueries(connectQueries.begin()) ;
+         iconnectQueries != connectQueries.end() ;
+         ++iconnectQueries) {
+
+        if (mysql_real_query(&mysql, iconnectQueries->data(), iconnectQueries->size())) {
+            throw MySQLWrapperError_t(mysql_errno(&mysql),
+                                      "Cannot execute connect query '%s': %s",
+                                      iconnectQueries->c_str(),
+                                      mysql_error(&mysql));
+        }
+    }
 }
 
 void Connection_t::query(MySQLWrapper_t *sql,
@@ -101,12 +148,12 @@ void Connection_t::query(MySQLWrapper_t *sql,
     }
 }
 
-long long Connection_t::lastInsertId()
+uint64_t Connection_t::lastInsertId()
 {
     return mysql_insert_id(&mysql);
 }
 
-long long Connection_t::lastMatchingRows()
+size_t Connection_t::lastMatchingRows()
 {
     return mysql_affected_rows(&mysql);
 }

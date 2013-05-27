@@ -61,7 +61,7 @@ Row_t& Row_t::operator>>(int &i)
 {
     boost::optional<std::string> result(fetchNextOpt());
     if (result) {
-        i = lexical_cast<std::string, int>(*result);
+        i = boost::lexical_cast<int>(*result);
     }
     return *this;
 }
@@ -70,7 +70,7 @@ Row_t& Row_t::operator>> (double &d)
 {
     boost::optional<std::string> result(fetchNextOpt());
     if (result) {
-        d = lexical_cast<std::string, double>(*result);
+        d = boost::lexical_cast<double>(*result);
     }
     return *this;
 }
@@ -104,7 +104,7 @@ Row_t& Row_t::operator>>(boost::optional<int> &i)
 {
     boost::optional<std::string> result(fetchNextOpt());
     if (result) {
-        i.reset(lexical_cast<std::string, int>(*result));
+        i.reset(boost::lexical_cast<int>(*result));
     }
     return *this;
 }
@@ -113,7 +113,7 @@ Row_t& Row_t::operator>> (boost::optional<double> &d)
 {
     boost::optional<std::string> result(fetchNextOpt());
     if (result) {
-        d.reset(lexical_cast<std::string, double>(*result));
+        d.reset(boost::lexical_cast<double>(*result));
     }
     return *this;
 }
